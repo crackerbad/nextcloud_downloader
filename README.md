@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Download files from and list content of NextCloud (password protected) share
+Download files or folders recursively from and list content of NextCloud (password protected) share
 directly from the command line without needing a webbrowser.
 
 
@@ -20,10 +20,10 @@ cd nextcloud_share_url_downloader
 
 ```bash
 # Ask for password:
-./nextcloud_share_url_downloader.sh <nextcloud_share_url>
+./nextcloud_share_url_downloader.sh <nextcloud_share_url> <output_dir_name>
 
 # Provide the password as an argument:
-./nextcloud_share_url_downloader.sh <nextcloud_share_url> <nextcloud_share_password>
+./nextcloud_share_url_downloader.sh <nextcloud_share_url> <nextcloud_share_password> <output_dir_name>
 ```
 
 
@@ -35,11 +35,13 @@ cd nextcloud_share_url_downloader
 # Download/list password protected file(s) by providing the password as argument:
 ./nextcloud_share_url_downloader.sh \
     "https://nextcloud.example.com/index.php/s/c56Ci4EpLnjj9xT" \
-    "my_nextcloud_share_password"
+    "my_nextcloud_share_password" \
+    "~/nextcloud.example.com/"
 
 # Download/list password protected file(s) by providing the password when being prompted for it:
 ./nextcloud_share_url_downloader.sh \
-    "https://nextcloud.example.com/index.php/s/c56Ci4EpLnjj9xT"
+    "https://nextcloud.example.com/index.php/s/c56Ci4EpLnjj9xT" \
+    "~/nextcloud.example.com/"
 ```
 
 
@@ -49,11 +51,11 @@ cd nextcloud_share_url_downloader
 # Download/list unprotected file(s) by providing an empty password as argument:
 ./nextcloud_share_url_downloader.sh \
     "https://nextcloud.example.com/index.php/s/c56Ci4EpLnjj9xT" \
-    ""
+    "" "~/nextcloud.example.com/"
 
 # Download/list unprotected file(s) by providing an empty password when being prompted for it:
 ./nextcloud_share_url_downloader.sh \
-    "https://nextcloud.example.com/index.php/s/c56Ci4EpLnjj9xT"
+    "https://nextcloud.example.com/index.php/s/c56Ci4EpLnjj9xT" "~/nextcloud.example.com/"
 ```
 
 
@@ -63,6 +65,7 @@ cd nextcloud_share_url_downloader
 # Download/list password protected file(s) from a subdirectory:
 ./nextcloud_share_url_downloader.sh \
     "https://nextcloud.example.com/index.php/s/c56Ci4EpLnjj9xT?path=subdir" \
-    "my_nextcloud_share_password"
+    "my_nextcloud_share_password" \
+    "~/nextcloud.example.com/"
 ```
 
