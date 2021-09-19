@@ -28,10 +28,13 @@
 #          (password protected) share from the command line.
 
 
+urldecode () {
+    echo $(printf $(echo -n "$1" | sed 's/\\/\\\\/g;s/\(%\)\([0-9a-fA-F][0-9a-fA-F]\)/\\x\2/g')"")
+}
 
 usage () {
     printf '\nUsage:    %s <nextcloud_share_url>\n' "${0}";
-    printf '          %s <nextcloud_share_url> <nextcloud_share_password>\n\n' "${0}";
+    printf '          %s <nextcloud_share_url> <nextcloud_share_password> <output_dir_name>\n\n' "${0}";
     printf 'Purpose:  Download files from and list content of NextCloud (password protected) share.\n\n';
     printf 'Examples:\n\n';
     printf '    Download/list password protected file(s) by providing the password as argument:\n'
@@ -161,7 +164,7 @@ list_content_nextcloud_share_url () {
 
     # Print each file/subdir info line with a ascending number in front of it.
     for i in $(seq 0 $(( ${#nextcloud_dir_listing_array[@]} - 1 )) ) ; do
-        printf '%d:\t%s\n' "${i}" "${nextcloud_dir_listing_array[${i}]}";
+        printf '%d:\t%s\n' "${i}" "$(urldecode ${nextcloud_dir_listing_array[${i}]})";
     done | column -t -s $'\t';
 
     printf '\n';
@@ -173,7 +176,7 @@ download_file_from_nextcloud_share () {
     # Download file from NextCloud share.
 
     local nextcloud_webdav_file_url="${1}";
-    local output_filename="${2}";
+    local output_filename="$(urldecode ${2})";
     local resume_or_restart='';
 
     if [ $(type curl >/dev/null 2>&1; echo $?) -ne 0 ] ; then
@@ -241,18 +244,20 @@ download_file_from_nextcloud_share () {
 
 
 main () {
-    if ( [ "${#@}" -ne 1 ] && [ "${#@}" -ne 2 ] ) ; then
+    if ( [ "${#@}" -ne 2 ] && [ "${#@}" -ne 3 ] ) ; then
         usage;
         return 1;
     fi
 
     nextcloud_share_url="${1}";
 
-    if [ "${#@}" -eq 2 ] ; then
+    if [ "${#@}" -eq 3 ] ; then
         nextcloud_share_password="${2}";
+        output_dir_name="${3}"
     else
         read -s -p "Enter NextCloud share password: " nextcloud_share_password;
         printf '\n\n';
+        output_dir_name="${2}"
     fi
 
     # Extract the following information from NextCloud share URL ("${nextcloud_share_url}"):
@@ -287,7 +292,10 @@ main () {
             nextcloud_share_list_selected_subdirs+=("${nextcloud_file_or_dir_name}");
         else
 	    # Download file from NextCloud share.
+           mkdir -p "${output_dir_name}/${nextcloud_share_token}/$(urldecode ${nextcloud_share_subdir})"
+           pushd "${output_dir_name}/${nextcloud_share_token}/$(urldecode ${nextcloud_share_subdir})"
 	    download_file_from_nextcloud_share "${nextcloud_host_url}/public.php/webdav${nextcloud_file_or_dir_name}" $(basename "${nextcloud_file_or_dir_name}");
+           popd
         fi
     done
 
@@ -297,7 +305,10 @@ main () {
         nextcloud_share_subdir="${nextcloud_share_list_selected_subdir}";
 
         # List content of NextCloud share subdir.
-        list_content_nextcloud_share_url;
+        mkdir -p "${output_dir_name}/${nextcloud_share_token}/$(urldecode ${nextcloud_share_subdir})"
+        pushd "${output_dir_name}/${nextcloud_share_token}/$(urldecode ${nextcloud_share_subdir})"
+        main "${nextcloud_host_url}/s/${nextcloud_share_token}?path=${nextcloud_share_subdir}" "${nextcloud_share_password}" "${output_dir_name}"
+        popd
     done
 
     return 0;
